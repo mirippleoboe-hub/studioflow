@@ -5,6 +5,8 @@ export const menuItems = [
   { id: "assignments", label: "Assignments", href: "/assignments" },
   { id: "resources", label: "Studio Hub", href: "/resources" },
   { id: "calendar", label: "Calendar", href: "/calendar" },
+  { id: "messages", label: "Messages", href: "/messages" },
+  { id: "materials", label: "Materials", href: "/materials" },
   { id: "settings", label: "Settings", href: "/settings" }
 ] as const;
 export type MenuId = typeof menuItems[number]["id"];

@@ -1,3 +1,8 @@
+type Table<Row, Insert = Partial<Row>> = { Row: Row; Insert: Insert; Update: Partial<Row>; Relationships: [] };
+export type MessageRow = { id: string; studio_id: string; sender_id: string; recipient_id: string; body: string; created_at: string; read_at: string | null };
+export type CalendarEvent = { id: string; studio_id: string; teacher_id: string; student_id: string | null; title: string; description: string; location: string; starts_at: string; ends_at: string; time_zone: string; created_at: string };
+export type Material = { id: string; studio_id: string; owner_id: string; name: string; storage_path: string | null; connection_id: string | null; provider_file_id: string | null; mime_type: string; size_bytes: number; shared: boolean; created_at: string };
+export type CloudConnection = { id: string; profile_id: string; provider: string; encrypted_tokens: string; updated_at: string };
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 type ProfileRow = {
@@ -6,6 +11,7 @@ type ProfileRow = {
   full_name: string;
   role: "teacher" | "student";
   created_at: string;
+  avatar_path: string | null;
 };
 
 type StudioRow = {
@@ -67,6 +73,10 @@ type StudioHubPageRow = {
 export type Database = {
   public: {
     Tables: {
+      messages: Table<MessageRow>;
+      calendar_events: Table<CalendarEvent>;
+      materials: Table<Material>;
+      cloud_connections: Table<CloudConnection>;
       profiles: {
         Relationships: [];
         Row: ProfileRow;
@@ -74,6 +84,7 @@ export type Database = {
           id: string;
           email: string;
           full_name?: string;
+          avatar_path?: string | null;
           role?: "teacher" | "student";
           created_at?: string;
         };
@@ -81,6 +92,7 @@ export type Database = {
           id?: string;
           email?: string;
           full_name?: string;
+          avatar_path?: string | null;
           role?: "teacher" | "student";
           created_at?: string;
         };

@@ -11,6 +11,13 @@ test('migrations, studio workflows, and tenant isolation', async () => {
     await db.exec(`
       create role anon; create role authenticated;
       create schema auth;
+      create schema storage;
+      create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);
+      create table storage.objects(id uuid primary key default gen_random_uuid(),bucket_id text,name text);
+      alter table storage.objects enable row level security;
+      create function storage.foldername(text) returns text[] language sql as $$ select string_to_array($1,'/') $$;
+      grant usage on schema storage to authenticated;
+      grant select,insert,delete on storage.objects to authenticated;
       create table auth.users (id uuid primary key, email text, raw_user_meta_data jsonb);
       create function auth.uid() returns uuid language sql stable as
         $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
@@ -67,11 +74,48 @@ test('migrations, studio workflows, and tenant isolation', async () => {
       assert.equal((await db.query('select * from studios')).rows.length, 0);
       await assert.rejects(db.query("select * from update_lesson_note_student_notes($1, 'Forbidden')", [note.id]), /own active studio/);
     }
+    // Real RLS and column grants for communication, scheduling, files, and avatars.
+    await asUser(teacher);
+    await db.query('update profiles set avatar_path=$1 where id=$2', [teacher+'/photo.webp',teacher]);
+    await assert.rejects(db.query("update profiles set role='teacher' where id=$1",[student]), /permission denied/);
+    await db.query("insert into storage.objects(bucket_id,name) values ('avatars',$1)",[teacher+'/photo.webp']);
+    await db.query('insert into messages(studio_id,sender_id,recipient_id,body) values ($1,$2,$3,$4)',[studio.id,teacher,student,'Practice question']);
+    await assert.rejects(db.query('insert into messages(studio_id,sender_id,recipient_id,body) values ($1,$2,$3,$4)',[studio.id,student,teacher,'Spoofed']),/row-level security/);
+    const event=await one("insert into calendar_events(studio_id,teacher_id,student_id,title,starts_at,ends_at) values ($1,$2,$3,'Lesson','2026-09-10T15:00Z','2026-09-10T16:00Z') returning *",[studio.id,teacher,student]);
+    await assert.rejects(db.query("insert into calendar_events(studio_id,teacher_id,title,starts_at,ends_at) values ($1,$2,'Conflict','2026-09-10T15:30Z','2026-09-10T16:30Z')",[studio.id,teacher]),/overlaps/);
+    await db.query("insert into materials(studio_id,owner_id,name,storage_path) values($1,$2,'Private score',$3)",[studio.id,teacher,teacher+'/score']);
+    await db.query("insert into storage.objects(bucket_id,name) values ('materials',$1)",[teacher+'/score']);
+    await db.query("insert into cloud_connections(profile_id,provider,encrypted_tokens) values($1,'google','encrypted-test')",[teacher]);
+    await asUser(student);
+    assert.equal((await db.query('select * from messages')).rows.length,1);
+    await db.query("update messages set read_at=now()");
+    await assert.rejects(db.query("update messages set body='tampered'"),/permission denied/);
+    assert.equal((await db.query('select * from calendar_events')).rows.length,1);
+    await assert.rejects(db.query("insert into calendar_events(studio_id,teacher_id,title,starts_at,ends_at) values ($1,$2,'Forbidden','2026-09-11T15:00Z','2026-09-11T16:00Z')",[studio.id,student]),/row-level security/);
+    assert.equal((await db.query('select * from materials')).rows.length,0);
+    assert.equal((await db.query("select * from storage.objects where bucket_id='materials'")).rows.length,0);
+    assert.equal((await db.query("select * from storage.objects where bucket_id='avatars'")).rows.length,1);
+    assert.equal((await db.query('select * from cloud_connections')).rows.length,0);
+    await assert.rejects(db.query("insert into storage.objects(bucket_id,name) values('avatars',$1)",[teacher+'/spoof.webp']),/row-level security/);
+    await asUser(teacher);
+    await db.query('update materials set shared=true');
+    await asUser(student);
+    assert.equal((await db.query('select * from materials')).rows.length,1);
+    assert.equal((await db.query("select * from storage.objects where bucket_id='materials'")).rows.length,1);
+    await asUser(outsider);
+    assert.equal((await db.query('select * from messages')).rows.length,0);
+    assert.equal((await db.query('select * from calendar_events')).rows.length,0);
+    assert.equal((await db.query('select * from materials')).rows.length,0);
+    assert.equal((await db.query('select * from storage.objects')).rows.length,0);
+    await asUser(teacher);
+    await db.query('delete from calendar_events where id=$1',[event.id]);
     await asUser(teacher);
     await db.query('select remove_student_from_studio($1, $2)', [studio.id, student]);
     await asUser(student);
     assert.equal((await db.query('select * from lesson_notes')).rows.length, 0);
     assert.equal((await db.query('select * from studio_hub_pages')).rows.length, 0);
+    assert.equal((await db.query('select * from messages')).rows.length,0);
+    assert.equal((await db.query('select * from materials')).rows.length,0);
     await assert.rejects(db.query("select * from update_lesson_note_student_notes($1, 'Forbidden')", [note.id]), /own active studio/);
     await asUser(teacher);
     await db.query('select delete_lesson_note($1)', [note.id]);

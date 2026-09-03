@@ -107,3 +107,15 @@ Teachers can open Settings → Personalize your workspace to choose a color pale
 Preferences are stored per account in Supabase Auth user metadata under `studioflow_personalization`, containing a `palette` identifier and `menuOrder` array. No schema migration or extra environment variable is required. Server rendering reads and normalizes the metadata; unknown menu entries are removed and missing entries restored. Authorization continues to use the database profile, never personalization metadata. Student navigation and colors are unchanged.
 
 Verification: as a teacher, choose Forest, move Lessons first, save, and reload. Check the sidebar and another page retain both choices. Cancel an unsaved change and test Reset to default followed by Save. Student accounts should redirect away from `/settings/personalization` and cannot invoke its save action.
+
+## Profiles, messaging, calendar and materials
+
+Apply `0005_communication_calendar_materials.sql` and `0006_private_storage.sql` after the first four migrations. Migration 0006 creates private Supabase Storage buckets and object policies. Do not make either bucket public. Existing table records are preserved.
+
+- Both roles: Edit profile under the account name uploads a cropped 384px photo (JPG/PNG/WebP input up to 2 MB). Images are available to studio peers through signed URLs.
+- Messages: direct teacher/student conversations inside the same active studio. Last 100 messages, 15-second refresh while visible, and read receipts. No email notifications or group chat.
+- Calendar: month grid and agenda, teacher-created lessons or whole-studio events, edit/delete, saved UTC instants and time zones, student-specific visibility, and overlap rejection within a studio. Recurrence and external calendar sync are not included.
+- Materials: private uploads up to 20 MB, explicit sharing with current studio members, authenticated downloads, and removal. New teacher menu entries are appended without resetting existing personalization. Student navigation includes Messages and Materials.
+- Cloud providers: implementation and operator credential setup in [cloud-storage-setup.md](docs/cloud-storage-setup.md). These are separate from ChatGPT's connectors. Optional integrations remain disabled until configured.
+
+Validation includes RLS/column-permission tests for message spoofing, student event writes, outsiders, private/shared files, avatar updates, and cloud token isolation. Hosted tests still require signed-in teacher and student accounts; external provider connections require the credentials above.

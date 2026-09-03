@@ -5,6 +5,8 @@ import type { Route } from "next";
 import { usePathname } from "next/navigation";
 import type { ComponentType, CSSProperties, ReactNode } from "react";
 import {
+  MessageSquare,
+  FolderOpen,
   BookOpen,
   CalendarDays,
   ClipboardList,
@@ -36,6 +38,8 @@ const teacherNav: NavItem[] = [
   { label: "Lessons", href: "/lessons", icon: Music },
   { label: "Assignments", href: "/assignments", icon: ClipboardList },
   { label: "Studio Hub", href: "/resources", icon: Library },
+  { label: "Messages", href: "/messages", icon: MessageSquare },
+  { label: "Materials", href: "/materials", icon: FolderOpen },
   { label: "Calendar", href: "/calendar", icon: CalendarDays },
   { label: "Settings", href: "/settings", icon: Settings }
 ];
@@ -45,18 +49,21 @@ const studentNav: NavItem[] = [
   { label: "Assignments", href: "/assignments", icon: ClipboardList },
   { label: "Lesson Notes", href: "/lesson-notes", icon: NotebookText },
   { label: "Studio Hub", href: "/resources", icon: BookOpen },
+  { label: "Messages", href: "/messages", icon: MessageSquare },
+  { label: "Materials", href: "/materials", icon: FolderOpen },
   { label: "Calendar", href: "/calendar", icon: CalendarDays }
 ];
 
 type AppShellProps = {
   children: ReactNode;
+  avatarUrl?: string | null;
   personalization: Personalization;
   membership: MembershipRow | null;
   profile: ProfileRow;
   studio: StudioRow | null;
 };
 
-export function AppShell({ children, membership, profile, studio, personalization }: AppShellProps) {
+export function AppShell({ children, membership, profile, studio, personalization, avatarUrl }: AppShellProps) {
   const pathname = usePathname();
   const navItems = profile.role === "teacher"
     ? personalization.menuOrder.flatMap(id => {
@@ -98,7 +105,11 @@ export function AppShell({ children, membership, profile, studio, personalizatio
             </nav>
             <div className="mt-auto border-t p-4">
               <div className="mb-4">
-                <p className="truncate text-sm font-medium">{profile.full_name}</p>
+                <Link href="/profile" className="mb-2 flex items-center gap-2 rounded-md text-sm font-medium hover:underline">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  {avatarUrl ? <img src={avatarUrl} alt="" className="h-8 w-8 rounded-full object-cover"/> : <span className="flex h-8 w-8 items-center justify-center rounded-full bg-accent">{profile.full_name.charAt(0)}</span>}
+                  <span className="truncate">{profile.full_name}</span>
+                </Link><Link href="/profile" className="text-xs text-muted-foreground hover:underline">Edit profile</Link>
                 <p className="truncate text-xs text-muted-foreground">
                   {profile.role === "teacher" ? "Teacher" : "Student"}
                   {membership ? ` - ${membership.role}` : ""}
