@@ -45,7 +45,7 @@ function matchesSearch(value: string, query: string) {
   return value.toLowerCase().includes(query);
 }
 
-function filterHref(status: string, query: string) {
+function filterHref(status: string, query: string): "/students" | `/students?${string}` {
   const params = new URLSearchParams();
 
   if (status !== "all") {

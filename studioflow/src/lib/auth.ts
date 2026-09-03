@@ -23,23 +23,26 @@ export async function getAppContext(): Promise<AppContext> {
     redirect("/login");
   }
 
-  const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
+  const { data: profile, error: profileError } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
 
-  if (!profile) {
-    redirect("/login?error=Profile%20setup%20is%20still%20pending");
+  if (profileError || !profile) {
+    redirect("/account-error");
   }
 
-  const { data: membership } = await supabase
+  const { data: membership, error: membershipError } = await supabase
     .from("studio_memberships")
     .select("*")
     .eq("profile_id", user.id)
     .limit(1)
     .maybeSingle();
 
+  if (membershipError) redirect("/account-error");
+
   let studio: StudioRow | null = null;
 
   if (membership) {
-    const { data } = await supabase.from("studios").select("*").eq("id", membership.studio_id).maybeSingle();
+    const { data, error } = await supabase.from("studios").select("*").eq("id", membership.studio_id).maybeSingle();
+    if (error || !data) redirect("/account-error");
     studio = data;
   }
 

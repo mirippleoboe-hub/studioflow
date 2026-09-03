@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { Route } from "next";
 import { usePathname } from "next/navigation";
 import type { ComponentType, ReactNode } from "react";
 import {
@@ -23,7 +24,7 @@ import type { MembershipRow, ProfileRow, StudioRow } from "@/lib/auth";
 
 type NavItem = {
   label: string;
-  href: string;
+  href: Route;
   icon: ComponentType<{ className?: string }>;
 };
 
@@ -58,7 +59,7 @@ export function AppShell({ children, membership, profile, studio }: AppShellProp
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="grid min-h-screen lg:grid-cols-[264px_1fr]">
+      <div className="grid min-h-screen lg:grid-cols-[232px_1fr]">
         <aside className="border-b bg-card lg:border-b-0 lg:border-r">
           <div className="flex h-full flex-col">
             <div className="border-b p-5">
@@ -70,7 +71,7 @@ export function AppShell({ children, membership, profile, studio }: AppShellProp
             <nav className="grid gap-1 p-3">
               {navItems.map((item) => {
                 const Icon = item.icon;
-                const active = pathname === item.href;
+                const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
 
                 return (
                   <Link
@@ -78,6 +79,7 @@ export function AppShell({ children, membership, profile, studio }: AppShellProp
                       "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
                       active && "bg-accent text-accent-foreground"
                     )}
+                    aria-current={active ? "page" : undefined}
                     href={item.href}
                     key={item.href}
                   >
@@ -104,7 +106,7 @@ export function AppShell({ children, membership, profile, studio }: AppShellProp
             </div>
           </div>
         </aside>
-        <main className="min-w-0 p-5 sm:p-8">{children}</main>
+        <main className="mx-auto w-full min-w-0 max-w-6xl p-6 sm:p-10 lg:p-12">{children}</main>
       </div>
     </div>
   );

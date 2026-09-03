@@ -68,6 +68,7 @@ export type Database = {
   public: {
     Tables: {
       profiles: {
+        Relationships: [];
         Row: ProfileRow;
         Insert: {
           id: string;
@@ -85,6 +86,7 @@ export type Database = {
         };
       };
       studios: {
+        Relationships: [];
         Row: StudioRow;
         Insert: {
           id?: string;
@@ -102,6 +104,7 @@ export type Database = {
         };
       };
       studio_memberships: {
+        Relationships: [];
         Row: StudioMembershipRow;
         Insert: {
           id?: string;
@@ -117,6 +120,7 @@ export type Database = {
         };
       };
       student_invites: {
+        Relationships: [];
         Row: StudentInviteRow;
         Insert: {
           id?: string;
@@ -148,6 +152,7 @@ export type Database = {
         };
       };
       lesson_notes: {
+        Relationships: [];
         Row: LessonNoteRow;
         Insert: {
           id?: string;
@@ -179,6 +184,7 @@ export type Database = {
         };
       };
       studio_hub_pages: {
+        Relationships: [];
         Row: StudioHubPageRow;
         Insert: {
           id?: string;

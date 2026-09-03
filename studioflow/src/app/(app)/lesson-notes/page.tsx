@@ -88,7 +88,7 @@ export default async function LessonNotesPage({ searchParams }: LessonNotesPageP
         <Card>
           <CardHeader>
             <CardTitle className="text-base">No lesson notes yet</CardTitle>
-            <CardDescription>Your teacher's notes will appear here after lessons.</CardDescription>
+            <CardDescription>Your teacher&apos;s notes will appear here after lessons.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-40 rounded-md border border-dashed bg-muted/20" />

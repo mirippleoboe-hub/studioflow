@@ -1,55 +1,101 @@
 # StudioFlow MVP
 
-Phase 1 and Phase 2 foundation for a studio management SaaS for music teachers.
+A music studio management app with teacher/student accounts, studio invitations, student rosters, lesson notes, and a customizable Studio Hub. Assignments and calendar screens are placeholders.
 
-## Stack
+## Architecture
 
-- Next.js 15 App Router
-- TypeScript
-- Tailwind CSS
-- shadcn/ui-style components
-- Supabase Auth
-- PostgreSQL with Row Level Security
+Next.js 15 App Router, React 19, TypeScript, Tailwind CSS, and shadcn-style components. Server Actions call Supabase Auth and PostgreSQL functions. Row Level Security enforces studio membership and teacher/student access. All database requests use the signed-in user's session; no service-role key is needed by this application.
 
-## Quick Start
+The repository contains an outer folder and this inner `studioflow` app folder. Run the commands below from the folder containing this README and `package.json`.
 
-1. Copy `.env.example` to `.env.local`.
-2. Create a Supabase project.
-3. Run the migration in `supabase/migrations/0001_phase_1_foundation.sql`.
-4. Install dependencies with `npm install`.
-5. Start the app with `npm run dev`.
+## Local setup
 
-## Implemented Scope
+Install Node.js 22 or newer, including npm. Then:
 
-Included:
+```sh
+npm ci
+cp .env.example .env.local
+```
 
-- Teacher and student signup/login using Supabase Auth.
-- Profile creation from Supabase Auth metadata.
-- Teacher studio creation with invite code generation.
-- Student studio joining via invite code.
-- Teacher student roster management.
-- Student-specific invite codes.
-- Add existing student accounts by email.
-- Student search, filtering, profile pages, and removal.
-- Lesson note schema, editor, teacher note pages, and student lesson history.
-- Studio Hub page builder with Notion-style blocks.
-- RLS-protected tables for profiles, studios, and memberships.
-- Role-aware app shell and dashboard placeholders.
+On Windows Command Prompt, use `copy .env.example .env.local` instead.
 
-Deferred:
+Set these values in `.env.local`:
 
-- Assignment creation and submissions.
-- Standalone resource library content.
-- Messaging and announcements CRUD.
-- Calendar integrations.
+| Variable | Value |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Your Supabase publishable key |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Alternative for projects using the legacy anon key; leave blank when using a publishable key |
+| `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` locally; your actual site origin on Vercel, without a trailing slash |
 
-## Important Files
+Use only public/publishable keys in `NEXT_PUBLIC_*` variables. Do not put a service-role or secret key there. Keep `.env.local` out of Git.
 
-- `supabase/migrations/0001_phase_1_foundation.sql`: schema, functions, triggers, and RLS.
-- `supabase/migrations/0002_student_management.sql`: student invites, roster RPCs, and invite RLS.
-- `supabase/migrations/0003_lesson_notes.sql`: lesson note schema, RLS, and secure note RPCs.
-- `supabase/migrations/0004_studio_hub.sql`: studio hub schema, RLS, and page-builder save RPC.
-- `src/middleware.ts`: Supabase session refresh and route protection.
-- `src/app/(auth)`: login and signup screens.
-- `src/app/onboarding`: teacher studio creation and student invite join.
-- `src/app/(app)`: authenticated role-aware application shell, dashboards, student management, lesson notes, and Studio Hub.
+Without Supabase configuration, the app shows a setup screen. This is not a demo or an authenticated workspace.
+
+## Database setup
+
+In your Supabase project's SQL editor, apply **all four migrations in order** to a new database:
+
+1. `supabase/migrations/0001_phase_1_foundation.sql`
+2. `supabase/migrations/0002_student_management.sql`
+3. `supabase/migrations/0003_lesson_notes.sql`
+4. `supabase/migrations/0004_studio_hub.sql`
+
+For an existing database, inspect its migration history and apply only missing migrations. These repairs do not require resetting the database or deleting existing records.
+
+The first migration installs the trigger that creates profiles for new Auth users. If an account was created before this migration, an administrator must check and repair that account's missing profile, preserving its intended teacher/student role. The app shows an account error screen rather than looping between login and dashboard.
+
+## Authentication
+
+In Supabase Auth URL Configuration, set the Site URL and allow these redirect URLs:
+
+- `http://localhost:3000/auth/callback`
+- `https://YOUR-VERCEL-DOMAIN/auth/callback`
+
+Use the exact callback URL for any preview deployment you test, and set its `NEXT_PUBLIC_SITE_URL` accordingly. New signups receive an email confirmation when confirmation is enabled. Open that email in the same browser used to sign up, then sign in. When confirmation is disabled, signup continues directly to onboarding.
+
+Supabase SSR reference: https://supabase.com/docs/guides/auth/server-side/creating-a-client
+
+## Run and verify
+
+```sh
+npm run dev
+```
+
+Open http://localhost:3000. If this Mac reports `EMFILE: too many open files, watch`, start with `WATCHPACK_POLLING=true npm run dev` instead. For a production build:
+
+```sh
+npm run lint
+npm run typecheck
+npm test
+npm run build
+npm start
+```
+
+The database test runs the migrations in an isolated, in-memory PostgreSQL instance. It checks studio creation, invitation redemption, teacher lesson notes, student edits, unpublished hub visibility, cross-studio isolation, and removed-student access. It stubs Supabase Auth identity and skips the pgcrypto extension declaration because UUID generation is built in. It does not replace hosted Auth, email, or PostgREST testing.
+
+Manual hosted checks still required:
+
+1. Create and confirm a teacher account; create a studio.
+2. Create and confirm a student account in a separate browser session; redeem an invitation.
+3. Save a teacher lesson note and edit the student notes as that student.
+4. Save a draft Studio Hub; verify it stays hidden from students, then publish it.
+5. Sign out and sign back in; confirm the saved work remains.
+
+## Vercel
+
+- Repository: `mirippleoboe-hub/studioflow`
+- **Root Directory: `studioflow`**
+- Framework preset: **Next.js**
+- Node.js: **22.x or newer supported version**
+- Install command: `npm ci`
+- Build command: `npm run build`
+- Output Directory: leave at the Next.js default; do not override with a static folder.
+- Add the environment variables above to each intended environment before building.
+- Redeploy after changing environment variables; public variables are included at build time.
+
+The dependency lockfile makes installs repeatable. Supabase SSR and JS versions are aligned. A narrow PostCSS override keeps Next.js 15 while using a patched CSS processor.
+
+## Visual direction
+
+Neutral surfaces, charcoal primary actions, subtle borders, no card shadows, generous spacing, and restrained headings. The existing layout and features are preserved.

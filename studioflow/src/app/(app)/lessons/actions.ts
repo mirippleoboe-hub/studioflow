@@ -22,7 +22,7 @@ function lessonPayload(formData: FormData) {
   };
 }
 
-function redirectToLessonError(path: string, message: string): never {
+function redirectToLessonError(path: "/lessons/new" | "/lessons" | `/lessons/${string}`, message: string): never {
   redirect(`${path}?error=${encodeURIComponent(message)}`);
 }
 
@@ -66,7 +66,7 @@ export async function createLessonNoteAction(formData: FormData) {
 export async function updateLessonNoteAction(formData: FormData) {
   await requireTeacher();
   const noteId = fieldValue(formData, "note_id");
-  const path = noteId ? `/lessons/${noteId}` : "/lessons";
+  const path: "/lessons" | `/lessons/${string}` = noteId ? `/lessons/${noteId}` : "/lessons";
 
   if (!noteId) {
     redirectToLessonError("/lessons", "Lesson note is required");
