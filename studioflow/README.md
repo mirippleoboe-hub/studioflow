@@ -99,3 +99,11 @@ The dependency lockfile makes installs repeatable. Supabase SSR and JS versions 
 ## Visual direction
 
 Neutral surfaces, charcoal primary actions, subtle borders, no card shadows, generous spacing, and restrained headings. The existing layout and features are preserved.
+
+## Teacher personalization
+
+Teachers can open Settings → Personalize your workspace to choose a color palette and reorder their sidebar. The page previews unsaved changes; Save preferences applies them, Cancel changes restores the last save, and Reset to default prepares the original colors/order for saving.
+
+Preferences are stored per account in Supabase Auth user metadata under `studioflow_personalization`, containing a `palette` identifier and `menuOrder` array. No schema migration or extra environment variable is required. Server rendering reads and normalizes the metadata; unknown menu entries are removed and missing entries restored. Authorization continues to use the database profile, never personalization metadata. Student navigation and colors are unchanged.
+
+Verification: as a teacher, choose Forest, move Lessons first, save, and reload. Check the sidebar and another page retain both choices. Cancel an unsaved change and test Reset to default followed by Save. Student accounts should redirect away from `/settings/personalization` and cannot invoke its save action.

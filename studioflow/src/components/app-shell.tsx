@@ -3,7 +3,7 @@
 import Link from "next/link";
 import type { Route } from "next";
 import { usePathname } from "next/navigation";
-import type { ComponentType, ReactNode } from "react";
+import type { ComponentType, CSSProperties, ReactNode } from "react";
 import {
   BookOpen,
   CalendarDays,
@@ -16,6 +16,8 @@ import {
   Settings,
   Users
 } from "lucide-react";
+
+import { menuItems, themeStyle, type Personalization } from "@/lib/personalization";
 
 import { signOutAction } from "@/app/(app)/actions";
 import { Button } from "@/components/ui/button";
@@ -48,17 +50,22 @@ const studentNav: NavItem[] = [
 
 type AppShellProps = {
   children: ReactNode;
+  personalization: Personalization;
   membership: MembershipRow | null;
   profile: ProfileRow;
   studio: StudioRow | null;
 };
 
-export function AppShell({ children, membership, profile, studio }: AppShellProps) {
+export function AppShell({ children, membership, profile, studio, personalization }: AppShellProps) {
   const pathname = usePathname();
-  const navItems = profile.role === "teacher" ? teacherNav : studentNav;
+  const navItems = profile.role === "teacher"
+    ? personalization.menuOrder.flatMap(id => {
+      const href = menuItems.find(item => item.id === id)?.href;
+      return teacherNav.filter(item => item.href === href);
+    }) : studentNav;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" style={profile.role === "teacher" ? themeStyle(personalization.palette) as CSSProperties : undefined}>
       <div className="grid min-h-screen lg:grid-cols-[232px_1fr]">
         <aside className="border-b bg-card lg:border-b-0 lg:border-r">
           <div className="flex h-full flex-col">

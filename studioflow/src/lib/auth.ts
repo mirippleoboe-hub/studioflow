@@ -1,3 +1,5 @@
+import { normalizePersonalization, type Personalization } from "@/lib/personalization";
+
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
@@ -9,6 +11,7 @@ export type MembershipRow = Database["public"]["Tables"]["studio_memberships"]["
 
 export type AppContext = {
   profile: ProfileRow;
+  personalization: Personalization;
   studio: StudioRow | null;
   membership: MembershipRow | null;
 };
@@ -48,6 +51,7 @@ export async function getAppContext(): Promise<AppContext> {
 
   return {
     profile,
+    personalization: normalizePersonalization(user.user_metadata?.studioflow_personalization),
     membership,
     studio
   };
