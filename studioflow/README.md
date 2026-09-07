@@ -1,6 +1,6 @@
 # StudioFlow MVP
 
-A music studio management app with teacher/student accounts, studio invitations, student rosters, lesson notes, and a customizable Studio Hub. Assignments and calendar screens are placeholders.
+A music studio management app with teacher/student accounts, studio invitations, student rosters, lesson notes, a customizable Studio Hub, messaging, scheduling, and private materials.
 
 ## Architecture
 
@@ -34,7 +34,7 @@ Without Supabase configuration, the app shows a setup screen. This is not a demo
 
 ## Database setup
 
-In your Supabase project's SQL editor, apply **all four migrations in order** to a new database:
+In your Supabase project's SQL editor, apply every migration in filename order to a new database. Migrations `0001`–`0004` create the core studio, roster, lesson-note, and Studio Hub features. Migrations `0005`–`0007` add communication, private storage, and refined scheduling.
 
 1. `supabase/migrations/0001_phase_1_foundation.sql`
 2. `supabase/migrations/0002_student_management.sql`
@@ -110,11 +110,11 @@ Verification: as a teacher, choose Forest, move Lessons first, save, and reload.
 
 ## Profiles, messaging, calendar and materials
 
-Apply `0005_communication_calendar_materials.sql` and `0006_private_storage.sql` after the first four migrations. Migration 0006 creates private Supabase Storage buckets and object policies. Do not make either bucket public. Existing table records are preserved.
+Apply `0005_communication_calendar_materials.sql`, `0006_private_storage.sql`, and `0007_refined_scheduling.sql` after the first four migrations. Migration 0006 creates private Supabase Storage buckets and object policies. Do not make either bucket public. Migration 0007 preserves existing events while adding event types, weekly availability, recurring lesson series, and student booking requests. No new environment variables are required.
 
 - Both roles: Edit profile under the account name uploads a cropped 384px photo (JPG/PNG/WebP input up to 2 MB). Images are available to studio peers through signed URLs.
 - Messages: direct teacher/student conversations inside the same active studio. Last 100 messages, 15-second refresh while visible, and read receipts. No email notifications or group chat.
-- Calendar: month grid and agenda, teacher-created lessons or whole-studio events, edit/delete, saved UTC instants and time zones, student-specific visibility, and overlap rejection within a studio. Recurrence and external calendar sync are not included.
+- Scheduling: month grid and agenda, lessons/studio events/unavailable blocks, weekly series of up to 24 events, teacher availability, student lesson requests, teacher approval or decline, time-zone-safe display, student-specific visibility, and overlap rejection within a studio. External calendar sync is not included.
 - Materials: private uploads up to 20 MB, explicit sharing with current studio members, authenticated downloads, and removal. New teacher menu entries are appended without resetting existing personalization. Student navigation includes Messages and Materials.
 - Cloud providers: implementation and operator credential setup in [cloud-storage-setup.md](docs/cloud-storage-setup.md). These are separate from ChatGPT's connectors. Optional integrations remain disabled until configured.
 
