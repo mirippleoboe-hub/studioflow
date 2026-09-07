@@ -1,5 +1,6 @@
 "use client";
 import { useState, useTransition, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 export type ActionResult = { error?: string; message?: string };
 export function ActionForm({ action, children, label = "Save", className = "space-y-4" }: {
@@ -10,12 +11,13 @@ export function ActionForm({ action, children, label = "Save", className = "spac
 }) {
   const [state, setState] = useState<ActionResult>({});
   const [pending, start] = useTransition();
+  const router = useRouter();
   return <form className={className} onSubmit={event => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     start(async () => {
       setState({});
-      try { setState(await action({}, data)); }
+      try { const result = await action({}, data); setState(result); if (result.message) router.refresh(); }
       catch { setState({ error: "Unable to save. Please try again." }); }
     });
   }}>
