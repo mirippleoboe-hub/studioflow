@@ -96,6 +96,12 @@ Manual hosted checks still required:
 
 The dependency lockfile makes installs repeatable. Supabase SSR and JS versions are aligned. A narrow PostCSS override keeps Next.js 15 while using a patched CSS processor.
 
+## AWS Amplify Hosting
+
+The repository root contains `amplify.yml` for an AWS Amplify Hosting deployment. StudioFlow remains in the nested `studioflow` app root, uses Node.js 22, and publishes the Next.js `.next` output. The application can keep using the existing Supabase project; no database migration is required to change web hosts.
+
+Follow [aws-hosting-migration.md](docs/aws-hosting-migration.md) for the GitHub connection, environment variables, Supabase callback update, validation, and domain cutover sequence.
+
 ## Visual direction
 
 Neutral surfaces, charcoal primary actions, subtle borders, no card shadows, generous spacing, and restrained headings. The existing layout and features are preserved.
