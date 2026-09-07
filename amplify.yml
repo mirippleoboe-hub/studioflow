@@ -1,0 +1,21 @@
+version: 1
+applications:
+  - appRoot: studioflow
+    frontend:
+      phases:
+        preBuild:
+          commands:
+            - nvm use 22
+            - npm ci
+        build:
+          commands:
+            - printenv | grep '^NEXT_PUBLIC_' >> .env.production || true
+            - npm run build
+      artifacts:
+        baseDirectory: .next
+        files:
+          - '**/*'
+      cache:
+        paths:
+          - node_modules/**/*
+          - .next/cache/**/*
