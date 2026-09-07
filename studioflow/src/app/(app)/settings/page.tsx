@@ -1,5 +1,9 @@
 import Link from "next/link";
+import { renameStudio } from "@/app/(app)/settings/actions";
+import { ActionForm } from "@/components/action-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/page-header";
 import { requireTeacher } from "@/lib/auth";
 
@@ -11,6 +15,20 @@ export default async function SettingsPage() {
       <PageHeader description="Manage your studio and make your workspace your own." title="Settings" />
       <Card className="mb-6">
         <CardHeader>
+          <CardTitle className="text-base">Studio name</CardTitle>
+          <CardDescription>This name appears throughout your teacher and student workspaces.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ActionForm action={renameStudio} label="Save studio name">
+            <div className="space-y-2">
+              <Label htmlFor="studio-name">Studio name</Label>
+              <Input id="studio-name" name="name" defaultValue={studio?.name ?? ""} maxLength={80} required />
+            </div>
+          </ActionForm>
+        </CardContent>
+      </Card>
+      <Card className="mb-6">
+        <CardHeader>
           <CardTitle className="text-base">Personalization</CardTitle>
           <CardDescription>Choose your colors and rearrange your menu.</CardDescription>
         </CardHeader>
@@ -18,7 +36,7 @@ export default async function SettingsPage() {
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">{studio?.name}</CardTitle>
+          <CardTitle className="text-base">Student invite code</CardTitle>
           <CardDescription>Students use this invite code to join your studio.</CardDescription>
         </CardHeader>
         <CardContent>
