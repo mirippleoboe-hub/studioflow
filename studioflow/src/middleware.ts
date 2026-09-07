@@ -5,7 +5,7 @@ import { getSupabaseConfig } from "@/lib/supabase/config";
 
 import type { Database } from "@/lib/database.types";
 
-const AUTH_PAGES = ["/login", "/signup"];
+const AUTH_PAGES = ["/login", "/signup", "/forgot-password"];
 const PUBLIC_PATHS = [...AUTH_PAGES, "/auth/callback"];
 
 function isPublicPath(pathname: string) {

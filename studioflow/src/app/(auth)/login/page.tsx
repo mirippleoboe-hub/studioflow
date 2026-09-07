@@ -40,6 +40,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
             <Input id="password" name="password" type="password" autoComplete="current-password" required />
+            <div className="text-right">
+              <Link className="text-sm font-medium text-primary hover:underline" href="/forgot-password">
+                Forgot your password?
+              </Link>
+            </div>
           </div>
           <Button className="w-full" type="submit">
             Sign in
