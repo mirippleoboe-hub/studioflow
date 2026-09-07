@@ -81,12 +81,16 @@ test('migrations, studio workflows, and tenant isolation', async () => {
     await db.query("insert into storage.objects(bucket_id,name) values ('avatars',$1)",[teacher+'/photo.webp']);
     await db.query('insert into messages(studio_id,sender_id,recipient_id,body) values ($1,$2,$3,$4)',[studio.id,teacher,student,'Practice question']);
     await assert.rejects(db.query('insert into messages(studio_id,sender_id,recipient_id,body) values ($1,$2,$3,$4)',[studio.id,student,teacher,'Spoofed']),/row-level security/);
-    const event=await one("insert into calendar_events(studio_id,teacher_id,student_id,title,starts_at,ends_at) values ($1,$2,$3,'Lesson','2026-09-10T15:00Z','2026-09-10T16:00Z') returning *",[studio.id,teacher,student]);
+    await one("insert into calendar_events(studio_id,teacher_id,student_id,title,starts_at,ends_at) values ($1,$2,$3,'Lesson','2026-09-10T15:00Z','2026-09-10T16:00Z') returning *",[studio.id,teacher,student]);
     await assert.rejects(db.query("insert into calendar_events(studio_id,teacher_id,title,starts_at,ends_at) values ($1,$2,'Conflict','2026-09-10T15:30Z','2026-09-10T16:30Z')",[studio.id,teacher]),/overlaps/);
+    await db.query("insert into availability_rules(studio_id,teacher_id,weekday,start_minute,end_minute,time_zone) values($1,$2,4,900,1080,'UTC')",[studio.id,teacher]);
     await db.query("insert into materials(studio_id,owner_id,name,storage_path) values($1,$2,'Private score',$3)",[studio.id,teacher,teacher+'/score']);
     await db.query("insert into storage.objects(bucket_id,name) values ('materials',$1)",[teacher+'/score']);
     await db.query("insert into cloud_connections(profile_id,provider,encrypted_tokens) values($1,'google','encrypted-test')",[teacher]);
     await asUser(student);
+    const booking=await one("select * from request_lesson_slot($1,$2,'2030-09-19T15:00Z','2030-09-19T16:00Z','UTC','Work on the concerto')",[studio.id,teacher]);
+    assert.equal(booking.status,'pending');
+    await assert.rejects(db.query("insert into booking_requests(studio_id,teacher_id,student_id,requested_start,requested_end,time_zone) values($1,$2,$3,'2030-09-26T15:00Z','2030-09-26T16:00Z','UTC')",[studio.id,teacher,student]),/permission denied/);
     assert.equal((await db.query('select * from messages')).rows.length,1);
     await db.query("update messages set read_at=now()");
     await assert.rejects(db.query("update messages set body='tampered'"),/permission denied/);
@@ -98,6 +102,9 @@ test('migrations, studio workflows, and tenant isolation', async () => {
     assert.equal((await db.query('select * from cloud_connections')).rows.length,0);
     await assert.rejects(db.query("insert into storage.objects(bucket_id,name) values('avatars',$1)",[teacher+'/spoof.webp']),/row-level security/);
     await asUser(teacher);
+    const approved=await one("select * from respond_booking_request($1,'approved','See you then')",[booking.id]);
+    assert.equal(approved.status,'approved');
+    assert.equal((await db.query('select * from calendar_events')).rows.length,2);
     await db.query('update materials set shared=true');
     await asUser(student);
     assert.equal((await db.query('select * from materials')).rows.length,1);
@@ -108,7 +115,7 @@ test('migrations, studio workflows, and tenant isolation', async () => {
     assert.equal((await db.query('select * from materials')).rows.length,0);
     assert.equal((await db.query('select * from storage.objects')).rows.length,0);
     await asUser(teacher);
-    await db.query('delete from calendar_events where id=$1',[event.id]);
+    await db.query('delete from calendar_events where studio_id=$1',[studio.id]);
     await asUser(teacher);
     await db.query('select remove_student_from_studio($1, $2)', [studio.id, student]);
     await asUser(student);
