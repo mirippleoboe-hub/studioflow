@@ -16,11 +16,11 @@ StudioFlow uses AWS Amplify Hosting for its Next.js web application and keeps Su
 | `AMPLIFY_MONOREPO_APP_ROOT` | `studioflow` |
 | `NEXT_PUBLIC_SUPABASE_URL` | The existing StudioFlow Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | The existing StudioFlow Supabase publishable key |
-| `NEXT_PUBLIC_SITE_URL` | The AWS branch URL after the first deployment |
+| `NEXT_PUBLIC_SITE_URL` | `https://codex-restore-functional-mvp.dveevljjplglv.amplifyapp.com` |
 
 If the site uses the legacy Supabase anon key instead, set `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Never add a Supabase service-role key to a `NEXT_PUBLIC_*` variable.
 
-The first deployment can temporarily use the Amplify-generated URL for `NEXT_PUBLIC_SITE_URL`. After that URL is known, update the value and redeploy so authentication emails return to AWS.
+AWS Amplify app ID `dveevljjplglv` hosts the preview branch at the URL above. Supabase allows its `/auth/callback` URL alongside the existing Vercel and localhost callbacks during migration.
 
 ## Supabase authentication URLs
 
