@@ -34,7 +34,7 @@ Without Supabase configuration, the app shows a setup screen. This is not a demo
 
 ## Database setup
 
-In your Supabase project's SQL editor, apply every migration in filename order to a new database. Migrations `0001`–`0004` create the core studio, roster, lesson-note, and Studio Hub features. Migrations `0005`–`0007` add communication, private storage, and refined scheduling.
+In your Supabase project's SQL editor, apply every migration in filename order to a new database. Migrations `0001`–`0004` create the core studio, roster, lesson-note, and Studio Hub features. Migrations `0005`–`0008` add communication, private storage, refined scheduling, assignments, and announcements.
 
 1. `supabase/migrations/0001_phase_1_foundation.sql`
 2. `supabase/migrations/0002_student_management.sql`
@@ -115,6 +115,8 @@ Apply `0005_communication_calendar_materials.sql`, `0006_private_storage.sql`, a
 - Both roles: Edit profile under the account name uploads a cropped 384px photo (JPG/PNG/WebP input up to 2 MB). Images are available to studio peers through signed URLs.
 - Messages: direct teacher/student conversations inside the same active studio. Last 100 messages, 15-second refresh while visible, and read receipts. No email notifications or group chat.
 - Scheduling: month grid and agenda, lessons/studio events/unavailable blocks, weekly series of up to 24 events, teacher availability, student lesson requests, teacher approval or decline, time-zone-safe display, student-specific visibility, and overlap rejection within a studio. External calendar sync is not included.
+- Assignments: teachers create and edit current or archived assignments for one active student or the whole studio, with optional instructions and due dates. Students see only studio-wide work and work assigned directly to them.
+- Announcements: teachers post, edit, expire, and remove studio-wide dashboard announcements. Active studio members can read current announcements.
 - Materials: private uploads up to 20 MB, explicit sharing with current studio members, authenticated downloads, and removal. New teacher menu entries are appended without resetting existing personalization. Student navigation includes Messages and Materials.
 - Cloud providers: implementation and operator credential setup in [cloud-storage-setup.md](docs/cloud-storage-setup.md). These are separate from ChatGPT's connectors. Optional integrations remain disabled until configured.
 
