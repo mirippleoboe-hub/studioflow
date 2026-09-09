@@ -56,6 +56,7 @@ export default async function TeacherLessonNotePage({ params, searchParams }: Te
         id: note.student_id,
         email: "",
         full_name: "Former student",
+        avatar_path: null,
         role: "student",
         created_at: note.created_at
       },

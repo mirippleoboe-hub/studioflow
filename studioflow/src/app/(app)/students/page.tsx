@@ -1,3 +1,4 @@
+import { ProfileAvatar } from "@/components/profile-avatar";
 import Link from "next/link";
 import { Eye, MailPlus, Search, UserPlus, X } from "lucide-react";
 
@@ -45,7 +46,7 @@ function matchesSearch(value: string, query: string) {
   return value.toLowerCase().includes(query);
 }
 
-function filterHref(status: string, query: string) {
+function filterHref(status: string, query: string): "/students" | `/students?${string}` {
   const params = new URLSearchParams();
 
   if (status !== "all") {
@@ -244,6 +245,7 @@ function ActiveStudentsTable({ students }: { students: ActiveStudent[] }) {
         {students.map(({ profile }) => (
           <div className="grid min-w-[720px] grid-cols-[1.5fr_1.5fr_auto] items-center gap-3 border-b px-4 py-3 last:border-b-0" key={profile.id}>
             <div>
+              <ProfileAvatar path={profile.avatar_path} name={profile.full_name}/>
               <Link className="font-medium text-foreground hover:underline" href={`/students/${profile.id}`}>
                 {profile.full_name || "Unnamed student"}
               </Link>

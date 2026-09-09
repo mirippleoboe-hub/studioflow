@@ -1,9 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import type { Route } from "next";
 import { usePathname } from "next/navigation";
-import type { ComponentType, ReactNode } from "react";
+import type { ComponentType, CSSProperties, ReactNode } from "react";
 import {
+  MessageSquare,
+  FolderOpen,
   BookOpen,
   CalendarDays,
   ClipboardList,
@@ -16,6 +19,8 @@ import {
   Users
 } from "lucide-react";
 
+import { menuItems, themeStyle, type Personalization } from "@/lib/personalization";
+
 import { signOutAction } from "@/app/(app)/actions";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -23,7 +28,7 @@ import type { MembershipRow, ProfileRow, StudioRow } from "@/lib/auth";
 
 type NavItem = {
   label: string;
-  href: string;
+  href: Route;
   icon: ComponentType<{ className?: string }>;
 };
 
@@ -33,6 +38,8 @@ const teacherNav: NavItem[] = [
   { label: "Lessons", href: "/lessons", icon: Music },
   { label: "Assignments", href: "/assignments", icon: ClipboardList },
   { label: "Studio Hub", href: "/resources", icon: Library },
+  { label: "Messages", href: "/messages", icon: MessageSquare },
+  { label: "Materials", href: "/materials", icon: FolderOpen },
   { label: "Calendar", href: "/calendar", icon: CalendarDays },
   { label: "Settings", href: "/settings", icon: Settings }
 ];
@@ -42,23 +49,31 @@ const studentNav: NavItem[] = [
   { label: "Assignments", href: "/assignments", icon: ClipboardList },
   { label: "Lesson Notes", href: "/lesson-notes", icon: NotebookText },
   { label: "Studio Hub", href: "/resources", icon: BookOpen },
+  { label: "Messages", href: "/messages", icon: MessageSquare },
+  { label: "Materials", href: "/materials", icon: FolderOpen },
   { label: "Calendar", href: "/calendar", icon: CalendarDays }
 ];
 
 type AppShellProps = {
   children: ReactNode;
+  avatarUrl?: string | null;
+  personalization: Personalization;
   membership: MembershipRow | null;
   profile: ProfileRow;
   studio: StudioRow | null;
 };
 
-export function AppShell({ children, membership, profile, studio }: AppShellProps) {
+export function AppShell({ children, membership, profile, studio, personalization, avatarUrl }: AppShellProps) {
   const pathname = usePathname();
-  const navItems = profile.role === "teacher" ? teacherNav : studentNav;
+  const navItems = profile.role === "teacher"
+    ? personalization.menuOrder.flatMap(id => {
+      const href = menuItems.find(item => item.id === id)?.href;
+      return teacherNav.filter(item => item.href === href);
+    }) : studentNav;
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="grid min-h-screen lg:grid-cols-[264px_1fr]">
+    <div className="min-h-screen bg-background" style={profile.role === "teacher" ? themeStyle(personalization.palette) as CSSProperties : undefined}>
+      <div className="grid min-h-screen lg:grid-cols-[232px_1fr]">
         <aside className="border-b bg-card lg:border-b-0 lg:border-r">
           <div className="flex h-full flex-col">
             <div className="border-b p-5">
@@ -70,7 +85,7 @@ export function AppShell({ children, membership, profile, studio }: AppShellProp
             <nav className="grid gap-1 p-3">
               {navItems.map((item) => {
                 const Icon = item.icon;
-                const active = pathname === item.href;
+                const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
 
                 return (
                   <Link
@@ -78,6 +93,7 @@ export function AppShell({ children, membership, profile, studio }: AppShellProp
                       "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
                       active && "bg-accent text-accent-foreground"
                     )}
+                    aria-current={active ? "page" : undefined}
                     href={item.href}
                     key={item.href}
                   >
@@ -89,7 +105,11 @@ export function AppShell({ children, membership, profile, studio }: AppShellProp
             </nav>
             <div className="mt-auto border-t p-4">
               <div className="mb-4">
-                <p className="truncate text-sm font-medium">{profile.full_name}</p>
+                <Link href="/profile" className="mb-2 flex items-center gap-2 rounded-md text-sm font-medium hover:underline">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  {avatarUrl ? <img src={avatarUrl} alt="" className="h-8 w-8 rounded-full object-cover"/> : <span className="flex h-8 w-8 items-center justify-center rounded-full bg-accent">{profile.full_name.charAt(0)}</span>}
+                  <span className="truncate">{profile.full_name}</span>
+                </Link><Link href="/profile" className="text-xs text-muted-foreground hover:underline">Edit profile</Link>
                 <p className="truncate text-xs text-muted-foreground">
                   {profile.role === "teacher" ? "Teacher" : "Student"}
                   {membership ? ` - ${membership.role}` : ""}
@@ -104,7 +124,7 @@ export function AppShell({ children, membership, profile, studio }: AppShellProp
             </div>
           </div>
         </aside>
-        <main className="min-w-0 p-5 sm:p-8">{children}</main>
+        <main className="mx-auto w-full min-w-0 max-w-6xl p-6 sm:p-10 lg:p-12">{children}</main>
       </div>
     </div>
   );

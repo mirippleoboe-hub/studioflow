@@ -14,9 +14,9 @@ function redirectWithError(message: string): never {
   redirect(`/students?error=${encodeURIComponent(message)}`);
 }
 
-function safeReturnPath(value: FormDataEntryValue | null) {
-  const path = String(value ?? "/students");
-  return path.startsWith("/") && !path.startsWith("//") ? path : "/students";
+function safeReturnPath(value: FormDataEntryValue | null): "/students" | `/students/${string}` {
+  const path = String(value ?? "");
+  return /^\/students\/[0-9a-f-]{36}$/i.test(path) ? path as `/students/${string}` : "/students";
 }
 
 export async function createStudentInviteAction(formData: FormData) {
